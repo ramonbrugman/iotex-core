@@ -95,6 +95,16 @@ func (m actionMsg) ChainID() uint32 {
 	return m.chainID
 }
 
+// consensusMsg packages a proto consensus message.
+type consensusMsg struct {
+	chainID   uint32
+	consensus *iotextypes.ConsensusMessage
+}
+
+func (m consensusMsg) ChainID() uint32 {
+	return m.chainID
+}
+
 // IotxDispatcher is the request and event dispatcher for iotx node.
 type IotxDispatcher struct {
 	started        int32
@@ -181,6 +191,8 @@ loop:
 		select {
 		case m := <-d.eventChan:
 			switch msg := m.(type) {
+			case *consensusMsg:
+				d.handleConsensusMsg(msg)
 			case *actionMsg:
 				d.handleActionMsg(msg)
 			case *blockMsg:
@@ -213,6 +225,23 @@ loop:
 	log.L().Info("block sync handler done.")
 }
 
+// handleConsensusMsg handles consensusMsg from all peers.
+func (d *IotxDispatcher) handleConsensusMsg(m *consensusMsg) {
+	log.L().Debug("receive consensusMsg.")
+
+	d.subscribersMU.RLock()
+	subscriber, ok := d.subscribers[m.ChainID()]
+	d.subscribersMU.RUnlock()
+	if ok {
+		d.updateEventAudit(iotexrpc.MessageType_CONSENSUS)
+		if err := subscriber.HandleConsensusMsg(m.consensus); err != nil {
+			log.L().Debug("Failed to handle consensus message.", zap.Error(err))
+		}
+	} else {
+		log.L().Info("No subscriber specified in the dispatcher.", zap.Uint32("chainID", m.ChainID()))
+	}
+}
+
 // handleActionMsg handles actionMsg from all peers.
 func (d *IotxDispatcher) handleActionMsg(m *actionMsg) {
 	log.L().Debug("receive actionMsg.")
@@ -224,7 +253,7 @@ func (d *IotxDispatcher) handleActionMsg(m *actionMsg) {
 		d.updateEventAudit(iotexrpc.MessageType_ACTION)
 		if err := subscriber.HandleAction(m.ctx, m.action); err != nil {
 			requestMtc.WithLabelValues("AddAction", "false").Inc()
-			log.L().Debug("Handle action request error.", zap.Error(err))
+			log.L().Debug("Failed to handle action message.", zap.Error(err))
 		}
 	} else {
 		log.L().Info("No subscriber specified in the dispatcher.", zap.Uint32("chainID", m.ChainID()))
@@ -267,6 +296,17 @@ func (d *IotxDispatcher) handleBlockSyncMsg(m *blockSyncMsg) {
 	} else {
 		log.L().Info("No subscriber specified in the dispatcher.", zap.Uint32("chainID", m.ChainID()))
 	}
+}
+
+// dispatchConsensus adds the passed consensus message to the news handling queue.
+func (d *IotxDispatcher) dispatchConsensus(ctx context.Context, chainID uint32, msg proto.Message) {
+	if atomic.LoadInt32(&d.shutdown) != 0 {
+		return
+	}
+	d.enqueueEvent(&consensusMsg{
+		chainID:   chainID,
+		consensus: (msg).(*iotextypes.ConsensusMessage),
+	})
 }
 
 // dispatchAction adds the passed action message to the news handling queue.
@@ -317,19 +357,10 @@ func (d *IotxDispatcher) HandleBroadcast(ctx context.Context, chainID uint32, me
 	if err != nil {
 		log.L().Warn("Unexpected message handled by HandleBroadcast.", zap.Error(err))
 	}
-	d.subscribersMU.RLock()
-	subscriber, ok := d.subscribers[chainID]
-	d.subscribersMU.RUnlock()
-	if !ok {
-		log.L().Warn("chainID has not been registered in dispatcher.", zap.Uint32("chainID", chainID))
-		return
-	}
 
 	switch msgType {
 	case iotexrpc.MessageType_CONSENSUS:
-		if err := subscriber.HandleConsensusMsg(message.(*iotextypes.ConsensusMessage)); err != nil {
-			log.L().Debug("Failed to handle consensus message.", zap.Error(err))
-		}
+		d.dispatchConsensus(ctx, chainID, message)
 	case iotexrpc.MessageType_ACTION:
 		d.dispatchAction(ctx, chainID, message)
 	case iotexrpc.MessageType_BLOCK:
