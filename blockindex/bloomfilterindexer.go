@@ -94,7 +94,7 @@ func (bfx *bloomfilterIndexer) Start(ctx context.Context) error {
 			}
 		}
 	case db.ErrNotExist:
-		if err = bfx.flusher.KVStoreWithBuffer().Put(RangeBloomFilterNamespace, []byte(CurrentHeightKey), byteutil.Uint64ToBytes(0)); err != nil {
+		if err = bfx.flusher.KVStoreWithBuffer().Put(RangeBloomFilterNamespace, []byte(CurrentHeightKey), byteutil.Uint64ToBytes(9100000)); err != nil {
 			return err
 		}
 		if err := bfx.flusher.Flush(); err != nil {
