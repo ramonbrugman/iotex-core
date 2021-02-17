@@ -293,6 +293,7 @@ type (
 		ProcessSyncRequestTTL time.Duration `yaml:"processSyncRequestTTL"`
 		BufferSize            uint64        `yaml:"bufferSize"`
 		IntervalSize          uint64        `yaml:"intervalSize"`
+		StopHeight            uint64        `yaml:"stopHeight"`
 		// MaxRepeat is the maximal number of repeat of a block sync request
 		MaxRepeat int `yaml:"maxRepeat"`
 		// RepeatDecayStep is the step for repeat number decreasing by 1

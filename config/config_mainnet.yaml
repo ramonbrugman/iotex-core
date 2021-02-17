@@ -48,6 +48,7 @@ consensus:
 
 blockSync:
   bufferSize: 400
+  stopHeight: 1500001
   maxRepeat: 3
   repeatDecayStep: 3
 
