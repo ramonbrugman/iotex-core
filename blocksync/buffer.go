@@ -83,6 +83,9 @@ func (b *blockBuffer) Flush(blk *block.Block) (bool, bCheckinResult) {
 			return false, bCheckinDebug
 		}
 		if err := commitBlock(b.bc, b.cs, blk); err != nil && errors.Cause(err) != blockchain.ErrInvalidTipHeight {
+			if err == blockchain.ErrMismatchDebug {
+				return false, b.keepCommit(blk)
+			}
 			if errors.Cause(err) == poll.ErrProposedDelegatesLength || errors.Cause(err) == poll.ErrDelegatesNotAsExpected || errors.Cause(err) == db.ErrNotExist {
 				l.Debug("Failed to commit the block.", zap.Error(err), zap.Uint64("syncHeight", heightToSync))
 			} else {
@@ -105,6 +108,21 @@ func (b *blockBuffer) Flush(blk *block.Block) (bool, bCheckinResult) {
 	}
 
 	return heightToSync > blkHeight, bCheckinValid
+}
+
+func (b *blockBuffer) keepCommit(blk *block.Block) bCheckinResult {
+	var err error
+	for i := 0; i < 100; i++ {
+		err = commitBlock(b.bc, b.cs, blk)
+		switch {
+		case err == nil:
+		case err == blockchain.ErrMismatchDebug:
+			log.L().Info("keep committing:", zap.Uint64("height", blk.Height()))
+		case errors.Cause(err) == block.ErrDeltaStateMismatch:
+			return bCheckinDebug
+		}
+	}
+	return bCheckinDebug
 }
 
 // GetBlocksIntervalsToSync returns groups of syncBlocksInterval are missing upto targetHeight.

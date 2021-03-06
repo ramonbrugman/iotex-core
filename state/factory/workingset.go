@@ -470,6 +470,9 @@ func (ws *workingSet) ValidateBlock(ctx context.Context, blk *block.Block) error
 		return err
 	}
 	if err = blk.VerifyDeltaStateDigest(digest); err != nil {
+		delta := blk.Header.DeltaStateDigest()
+		log.L().Error("failed to verify:", log.Hex("expect", delta[:]))
+		log.L().Error("failed to verify:", log.Hex("actual", digest[:]))
 		return errors.Wrap(err, "failed to verify delta state digest")
 	}
 	if err = blk.VerifyReceiptRoot(calculateReceiptRoot(ws.receipts)); err != nil {

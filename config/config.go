@@ -278,6 +278,7 @@ type (
 		StateDBCacheSize int `yaml:"stateDBCacheSize"`
 		// WorkingSetCacheSize is the max size of workingset cache in state factory
 		WorkingSetCacheSize uint64 `yaml:"workingSetCacheSize"`
+		MismatchHeight      uint64 `yaml:"mismatchHeight"`
 	}
 
 	// Consensus is the config struct for consensus package

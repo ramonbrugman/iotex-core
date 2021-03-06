@@ -49,7 +49,8 @@ var (
 	// ErrInsufficientGas indicates the error of insufficient gas value for data storage
 	ErrInsufficientGas = errors.New("insufficient intrinsic gas value")
 	// ErrBalance indicates the error of balance
-	ErrBalance = errors.New("invalid balance")
+	ErrBalance       = errors.New("invalid balance")
+	ErrMismatchDebug = errors.New("mismatch debug")
 )
 
 func init() {
@@ -129,6 +130,7 @@ type blockchain struct {
 	lifecycle      lifecycle.Lifecycle
 	pubSubManager  PubSubManager
 	timerFactory   *prometheustimer.TimerFactory
+	mismatchHeight uint64
 
 	// used by account-based model
 	bbf BlockBuilderFactory
@@ -174,10 +176,11 @@ func InMemDaoOption(indexers ...blockdao.BlockIndexer) Option {
 func NewBlockchain(cfg config.Config, dao blockdao.BlockDAO, bbf BlockBuilderFactory, opts ...Option) Blockchain {
 	// create the Blockchain
 	chain := &blockchain{
-		config:        cfg,
-		dao:           dao,
-		bbf:           bbf,
-		pubSubManager: NewPubSub(cfg.BlockSync.BufferSize),
+		config:         cfg,
+		dao:            dao,
+		bbf:            bbf,
+		pubSubManager:  NewPubSub(cfg.BlockSync.BufferSize),
+		mismatchHeight: cfg.Chain.MismatchHeight,
 	}
 	for _, opt := range opts {
 		if err := opt(chain, cfg); err != nil {
@@ -399,6 +402,9 @@ func (bc *blockchain) CommitBlock(blk *block.Block) error {
 	defer bc.mu.Unlock()
 	timer := bc.timerFactory.NewTimer("CommitBlock")
 	defer timer.End()
+	if blk.Height() == bc.mismatchHeight {
+		return ErrMismatchDebug
+	}
 	return bc.commitBlock(blk)
 }
 
