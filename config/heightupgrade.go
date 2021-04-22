@@ -25,6 +25,7 @@ const (
 	FbkMigration
 	Greenland
 	Hawaii
+	Hudson
 )
 
 type (
@@ -49,6 +50,7 @@ type (
 		fbkMigrationHeight uint64
 		greanlandHeight    uint64
 		hawaiiHeight       uint64
+		hudsonHeight       uint64
 	}
 )
 
@@ -66,6 +68,7 @@ func NewHeightUpgrade(cfg *genesis.Genesis) HeightUpgrade {
 		cfg.FbkMigrationBlockHeight,
 		cfg.GreenlandBlockHeight,
 		cfg.HawaiiBlockHeight,
+		cfg.HudsonBlockHeight,
 	}
 }
 
@@ -95,6 +98,8 @@ func (hu *HeightUpgrade) IsPost(name HeightName, height uint64) bool {
 		h = hu.greanlandHeight
 	case Hawaii:
 		h = hu.hawaiiHeight
+	case Hudson:
+		h = hu.hudsonHeight
 	default:
 		log.Panic("invalid height name!")
 	}
@@ -138,3 +143,6 @@ func (hu *HeightUpgrade) GreenlandBlockHeight() uint64 { return hu.greanlandHeig
 
 // HawaiiBlockHeight returns the hawaii height
 func (hu *HeightUpgrade) HawaiiBlockHeight() uint64 { return hu.hawaiiHeight }
+
+// HudsonBlockHeight returns the hudson height
+func (hu *HeightUpgrade) HudsonBlockHeight() uint64 { return hu.hudsonHeight }

@@ -59,6 +59,7 @@ func defaultConfig() Genesis {
 			FairbankBlockHeight:     5165641,
 			GreenlandBlockHeight:    6544441,
 			HawaiiBlockHeight:       11073241,
+			HudsonBlockHeight:       11073241,
 		},
 		Account: Account{
 			InitBalanceMap: make(map[string]string),
@@ -170,8 +171,11 @@ type (
 		FairbankBlockHeight uint64 `yaml:"fairbankHeight"`
 		// GreenlandBlockHeight is the start height of storing latest 720 block meta and rewarding/staking bucket pool
 		GreenlandBlockHeight uint64 `yaml:"greenlandHeight"`
-		// HawaiiBlockHeight is the start height to fix GetBlockHash in EVM
+		// HawaiiBlockHeight is the start height to fix GetBlockHash, display revert message in EVM, fix sorted map in
+		// evm state adaptor, and fix change to same candidate in staking
 		HawaiiBlockHeight uint64 `yaml:"hawaiiHeight"`
+		// HudsonBlockHeight is the start height to correct contract creation address, and support chainID in EVM
+		HudsonBlockHeight uint64 `yaml:"hudsonHeight"`
 	}
 	// Account contains the configs for account protocol
 	Account struct {
