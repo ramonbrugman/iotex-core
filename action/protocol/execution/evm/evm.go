@@ -258,13 +258,14 @@ func ExecuteContract(
 
 func getChainConfig(hu config.HeightUpgrade, height uint64) *params.ChainConfig {
 	var chainConfig params.ChainConfig
-	if hu.IsPost(config.Hawaii, height) {
+	if hu.IsPost(config.Hudson, height) {
 		chainConfig.ChainID = new(big.Int).SetUint64(uint64(config.EVMNetworkID()))
 	}
 	chainConfig.ConstantinopleBlock = new(big.Int).SetUint64(0) // Constantinople switch block (nil = no fork, 0 = already activated)
 	chainConfig.BeringBlock = new(big.Int).SetUint64(hu.BeringBlockHeight())
 	// enable earlier Ethereum forks at Greenland
 	chainConfig.GreenlandBlock = new(big.Int).SetUint64(hu.GreenlandBlockHeight())
+	chainConfig.HudsonBlock = new(big.Int).SetUint64(hu.HudsonBlockHeight())
 	return &chainConfig
 }
 
