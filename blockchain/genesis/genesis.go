@@ -176,7 +176,12 @@ type (
 		FairbankBlockHeight uint64 `yaml:"fairbankHeight"`
 		// GreenlandBlockHeight is the start height of storing latest 720 block meta and rewarding/staking bucket pool
 		GreenlandBlockHeight uint64 `yaml:"greenlandHeight"`
-		// HawaiiBlockHeight is the start height to fix GetBlockHash in EVM
+		// HawaiiBlockHeight is the start height to
+		// 1. fix GetBlockHash in EVM
+		// 2. display revert message in EVM
+		// 3. fix sorted map in evm state adaptor
+		// 4. fix change to same candidate in staking
+		// 5. correct contract creation address in EVM
 		HawaiiBlockHeight uint64 `yaml:"hawaiiHeight"`
 	}
 	// Account contains the configs for account protocol

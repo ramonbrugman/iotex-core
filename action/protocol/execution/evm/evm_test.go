@@ -195,7 +195,9 @@ func TestConstantinople(t *testing.T) {
 		// verify iotex configs in chain config block
 		require.Equal(big.NewInt(int64(genesis.Default.BeringBlockHeight)), evmChainConfig.BeringBlock)
 		require.Equal(big.NewInt(int64(genesis.Default.GreenlandBlockHeight)), evmChainConfig.GreenlandBlock)
+		require.Equal(big.NewInt(int64(genesis.Default.HawaiiBlockHeight)), evmChainConfig.HawaiiBlock)
 		require.Equal(hu.IsPre(config.Bering, e.height), evm.IsPreBering())
+		require.Equal(hu.IsPost(config.Hawaii, e.height), evmChainConfig.IsHawaii(new(big.Int).SetUint64(e.height)))
 	}
 }
 
