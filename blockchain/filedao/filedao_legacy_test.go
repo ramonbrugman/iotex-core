@@ -57,7 +57,7 @@ func TestFileDAOLegacy_PutBlock(t *testing.T) {
 		// verify API for genesis block
 		h, err = fd.GetBlockHash(0)
 		r.NoError(err)
-		r.Equal(block.GenesisHash(), h)
+		r.Equal(genesis.Hash(), h)
 		height, err := fd.GetBlockHeight(h)
 		r.NoError(err)
 		r.Zero(height)
@@ -75,8 +75,8 @@ func TestFileDAOLegacy_PutBlock(t *testing.T) {
 
 	cfg := config.Default.DB
 	cfg.DbPath = testPath
-	genesis.SetGenesisTimestamp(config.Default.Genesis.Timestamp)
-	block.LoadGenesisHash()
+	genesis.Default.SetGenesisTimestamp()
+	genesis.Default.LoadGenesisHash()
 	for _, compress := range []bool{false, true} {
 		cfg.CompressLegacy = compress
 		t.Run("test fileDAOLegacy interface", func(t *testing.T) {

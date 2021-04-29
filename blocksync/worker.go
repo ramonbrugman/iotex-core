@@ -114,7 +114,7 @@ func (w *syncWorker) Sync() {
 			if err := w.unicastHandler(ctx, p, &iotexrpc.BlockSync{
 				Start: interval.Start, End: interval.End,
 			}); err != nil {
-				log.L().Error("failed to sync block.", zap.String("peer", fmt.Sprintf("%+v", p)),
+				log.L().Debug("failed to sync block.", zap.String("peer", fmt.Sprintf("%+v", p)),
 					zap.Error(err))
 			}
 		}

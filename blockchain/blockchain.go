@@ -438,7 +438,7 @@ func (bc *blockchain) tipInfo() (*protocol.TipInfo, error) {
 	if tipHeight == 0 {
 		return &protocol.TipInfo{
 			Height:    0,
-			Hash:      bc.config.Genesis.Hash(),
+			Hash:      genesis.Hash(),
 			Timestamp: time.Unix(bc.config.Genesis.Timestamp, 0),
 		}, nil
 	}

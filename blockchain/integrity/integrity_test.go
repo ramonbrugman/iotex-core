@@ -569,8 +569,7 @@ func TestGetBlockHash(t *testing.T) {
 	cfg.Genesis.EnableGravityChainVoting = false
 	cfg.Genesis.HawaiiBlockHeight = 3
 	cfg.ActPool.MinGasPriceStr = "0"
-	genesis.SetGenesisTimestamp(cfg.Genesis.Timestamp)
-	block.LoadGenesisHash()
+	cfg.Genesis.SetGenesisTimestamp()
 	// create chain
 	registry := protocol.NewRegistry()
 	acc := account.NewProtocol(rewarding.DepositGas)
@@ -895,7 +894,7 @@ func TestConstantinople(t *testing.T) {
 		require.NoError(rp.Register(registry))
 		// create indexer
 		cfg.DB.DbPath = cfg.Chain.IndexDBPath
-		indexer, err := blockindex.NewIndexer(db.NewBoltDB(cfg.DB), cfg.Genesis.Hash())
+		indexer, err := blockindex.NewIndexer(db.NewBoltDB(cfg.DB), genesis.Hash())
 		require.NoError(err)
 		// create BlockDAO
 		cfg.DB.DbPath = cfg.Chain.ChainDBPath
@@ -1104,6 +1103,8 @@ func TestConstantinople(t *testing.T) {
 	cfg.Genesis.BeringBlockHeight = 8
 	cfg.Genesis.GreenlandBlockHeight = 9
 	cfg.Genesis.InitBalanceMap[identityset.Address(27).String()] = unit.ConvertIotxToRau(10000000000).String()
+	cfg.Genesis.SetGenesisTimestamp()
+	cfg.Genesis.LoadGenesisHash()
 
 	t.Run("test Constantinople contract", func(t *testing.T) {
 		testValidateBlockchain(cfg, t)
@@ -1130,7 +1131,7 @@ func TestLoadBlockchainfromDB(t *testing.T) {
 		if _, gateway := cfg.Plugins[config.GatewayPlugin]; gateway && !cfg.Chain.EnableAsyncIndexWrite {
 			// create indexer
 			cfg.DB.DbPath = cfg.Chain.IndexDBPath
-			indexer, err = blockindex.NewIndexer(db.NewBoltDB(cfg.DB), cfg.Genesis.Hash())
+			indexer, err = blockindex.NewIndexer(db.NewBoltDB(cfg.DB), genesis.Hash())
 			require.NoError(err)
 			indexers = append(indexers, indexer)
 		}
@@ -1288,7 +1289,7 @@ func TestLoadBlockchainfromDB(t *testing.T) {
 			// verify genesis block index
 			bi, err := indexer.GetBlockIndex(0)
 			require.NoError(err)
-			require.Equal(cfg.Genesis.Hash(), hash.BytesToHash256(bi.Hash()))
+			require.Equal(genesis.Hash(), hash.BytesToHash256(bi.Hash()))
 			require.EqualValues(0, bi.NumAction())
 			require.Equal(big.NewInt(0), bi.TsfAmount())
 
@@ -1330,8 +1331,7 @@ func TestLoadBlockchainfromDB(t *testing.T) {
 	cfg.Chain.IndexDBPath = testIndexPath
 	cfg.Genesis.EnableGravityChainVoting = false
 	cfg.ActPool.MinGasPriceStr = "0"
-	genesis.SetGenesisTimestamp(cfg.Genesis.Timestamp)
-	block.LoadGenesisHash()
+	cfg.Genesis.SetGenesisTimestamp()
 
 	t.Run("load blockchain from DB w/o explorer", func(t *testing.T) {
 		testValidateBlockchain(cfg, t)
@@ -1830,7 +1830,7 @@ func newChain(t *testing.T, stateTX bool) (blockchain.Blockchain, factory.Factor
 	if _, gateway := cfg.Plugins[config.GatewayPlugin]; gateway && !cfg.Chain.EnableAsyncIndexWrite {
 		// create indexer
 		cfg.DB.DbPath = cfg.Chain.IndexDBPath
-		indexer, err = blockindex.NewIndexer(db.NewBoltDB(cfg.DB), cfg.Genesis.Hash())
+		indexer, err = blockindex.NewIndexer(db.NewBoltDB(cfg.DB), genesis.Hash())
 		require.NoError(err)
 		indexers = append(indexers, indexer)
 	}

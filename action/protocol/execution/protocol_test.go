@@ -37,6 +37,7 @@ import (
 	"github.com/iotexproject/iotex-core/blockchain"
 	"github.com/iotexproject/iotex-core/blockchain/block"
 	"github.com/iotexproject/iotex-core/blockchain/blockdao"
+	"github.com/iotexproject/iotex-core/blockchain/genesis"
 	"github.com/iotexproject/iotex-core/blockindex"
 	"github.com/iotexproject/iotex-core/config"
 	"github.com/iotexproject/iotex-core/db"
@@ -362,7 +363,8 @@ func (sct *SmartContractTest) prepareBlockchain(
 	ap, err := actpool.NewActPool(sf, cfg.ActPool)
 	r.NoError(err)
 	// create indexer
-	indexer, err := blockindex.NewIndexer(db.NewMemKVStore(), cfg.Genesis.Hash())
+	cfg.Genesis.LoadGenesisHash()
+	indexer, err := blockindex.NewIndexer(db.NewMemKVStore(), genesis.Hash())
 	r.NoError(err)
 	// create BlockDAO
 	dao := blockdao.NewBlockDAOInMemForTest([]blockdao.BlockIndexer{sf, indexer})

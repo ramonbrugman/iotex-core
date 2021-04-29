@@ -1037,8 +1037,8 @@ func TestServer_GetBlockMetas(t *testing.T) {
 	require := require.New(t)
 	cfg := newConfig(t)
 
-	genesis.SetGenesisTimestamp(config.Default.Genesis.Timestamp)
-	block.LoadGenesisHash()
+	cfg.Genesis.SetGenesisTimestamp()
+	cfg.Genesis.LoadGenesisHash()
 	svr, bfIndexFile, err := createServer(cfg, false)
 	require.NoError(err)
 	defer func() {
@@ -1066,7 +1066,7 @@ func TestServer_GetBlockMetas(t *testing.T) {
 		require.Equal(test.gasUsed, meta.GasUsed)
 		if test.start == 0 {
 			// genesis block
-			h := block.GenesisHash()
+			h := genesis.Hash()
 			require.Equal(meta.Hash, hex.EncodeToString(h[:]))
 		}
 		var prevBlkPb *iotextypes.BlockMeta
@@ -2355,8 +2355,9 @@ func setupChain(cfg config.Config) (blockchain.Blockchain, blockdao.BlockDAO, bl
 	}
 	cfg.Genesis.InitBalanceMap[identityset.Address(27).String()] = unit.ConvertIotxToRau(10000000000).String()
 	cfg.Genesis.InitBalanceMap[identityset.Address(28).String()] = unit.ConvertIotxToRau(10000000000).String()
+	cfg.Genesis.LoadGenesisHash()
 	// create indexer
-	indexer, err := blockindex.NewIndexer(db.NewMemKVStore(), cfg.Genesis.Hash())
+	indexer, err := blockindex.NewIndexer(db.NewMemKVStore(), genesis.Hash())
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, "", errors.New("failed to create indexer")
 	}

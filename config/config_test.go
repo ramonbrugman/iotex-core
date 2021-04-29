@@ -115,8 +115,10 @@ func TestNewDefaultConfig(t *testing.T) {
 	require.NoError(t, err)
 	SetEVMNetworkID(cfg.Chain.EVMNetworkID)
 	require.Equal(t, cfg.Chain.EVMNetworkID, EVMNetworkID())
-	genesis.SetGenesisTimestamp(cfg.Genesis.Timestamp)
+	cfg.Genesis.SetGenesisTimestamp()
 	require.Equal(t, cfg.Genesis.Timestamp, genesis.Timestamp())
+	cfg.Genesis.LoadGenesisHash()
+	require.Equal(t, genesis.Hash(), cfg.Genesis.ComputeHash())
 }
 
 func TestNewConfigWithoutValidation(t *testing.T) {

@@ -36,6 +36,7 @@ import (
 	"github.com/iotexproject/iotex-core/blockchain"
 	"github.com/iotexproject/iotex-core/blockchain/block"
 	"github.com/iotexproject/iotex-core/blockchain/blockdao"
+	"github.com/iotexproject/iotex-core/blockchain/genesis"
 	"github.com/iotexproject/iotex-core/blockindex"
 	"github.com/iotexproject/iotex-core/blocksync"
 	"github.com/iotexproject/iotex-core/config"
@@ -166,7 +167,7 @@ func New(
 	_, gateway := cfg.Plugins[config.GatewayPlugin]
 	if gateway {
 		cfg.DB.DbPath = cfg.Chain.IndexDBPath
-		indexer, err = blockindex.NewIndexer(db.NewBoltDB(cfg.DB), cfg.Genesis.Hash())
+		indexer, err = blockindex.NewIndexer(db.NewBoltDB(cfg.DB), genesis.Hash())
 		if err != nil {
 			return nil, err
 		}

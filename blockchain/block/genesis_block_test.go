@@ -14,14 +14,13 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/iotexproject/iotex-core/blockchain/genesis"
-	"github.com/iotexproject/iotex-core/config"
 	"github.com/iotexproject/iotex-core/pkg/version"
 )
 
 func TestGenesisBlock(t *testing.T) {
 	r := require.New(t)
 
-	genesis.SetGenesisTimestamp(config.Default.Genesis.Timestamp)
+	genesis.Default.SetGenesisTimestamp()
 	blk := GenesisBlock()
 	r.EqualValues(version.ProtocolVersion, blk.Version())
 	r.Zero(blk.Height())
@@ -31,10 +30,10 @@ func TestGenesisBlock(t *testing.T) {
 	r.Equal(hash.ZeroHash256, blk.DeltaStateDigest())
 	r.Equal(hash.ZeroHash256, blk.ReceiptRoot())
 
-	r.Equal(hash.ZeroHash256, GenesisHash())
-	LoadGenesisHash()
+	r.Equal(hash.ZeroHash256, genesis.Hash())
+	genesis.Default.LoadGenesisHash()
 	h := blk.HashBlock()
-	r.Equal(GenesisHash(), h)
-	r.Equal("ab7d006c1f7a9345ad05eef1b4f062814a176c25c7558052e18896844ee71edb", hex.EncodeToString(h[:]))
+	r.Equal(genesis.Hash(), h)
+	r.Equal("e825cf0df9c72bc8cc74b23485af65c4d8a8ba691db335e44de7362cd86bac7f", hex.EncodeToString(h[:]))
 	r.NoError(VerifyBlock(blk))
 }

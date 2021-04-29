@@ -22,6 +22,7 @@ import (
 	"github.com/iotexproject/iotex-core/actpool"
 	"github.com/iotexproject/iotex-core/actpool/actioniterator"
 	"github.com/iotexproject/iotex-core/blockchain/block"
+	"github.com/iotexproject/iotex-core/blockchain/genesis"
 	"github.com/iotexproject/iotex-core/db"
 	"github.com/iotexproject/iotex-core/pkg/log"
 	"github.com/iotexproject/iotex-core/state"
@@ -500,7 +501,7 @@ func (ws *workingSet) CreateBuilder(
 	// The first block's previous block hash is pointing to the digest of genesis config. This is to guarantee all nodes
 	// could verify that they start from the same genesis
 	if blkCtx.BlockHeight == 1 {
-		prevBlkHash = bcCtx.Genesis.Hash()
+		prevBlkHash = genesis.Hash()
 	}
 	digest, err := ws.digest()
 	if err != nil {

@@ -32,9 +32,11 @@ import (
 var Default = defaultConfig()
 
 var (
-	genesisPath   string
-	genesisTs     int64
-	loadGenesisTs sync.Once
+	genesisPath     string
+	genesisTs       int64
+	genesisHash     hash.Hash256
+	loadGenesisTs   sync.Once
+	loadGenesisHash sync.Once
 )
 
 func init() {
@@ -319,9 +321,9 @@ func New() (Genesis, error) {
 }
 
 // SetGenesisTimestamp sets the genesis timestamp
-func SetGenesisTimestamp(ts int64) {
+func (g *Genesis) SetGenesisTimestamp() {
 	loadGenesisTs.Do(func() {
-		genesisTs = ts
+		genesisTs = g.Timestamp
 	})
 }
 
@@ -330,8 +332,20 @@ func Timestamp() int64 {
 	return atomic.LoadInt64(&genesisTs)
 }
 
-// Hash is the hash of genesis config
-func (g *Genesis) Hash() hash.Hash256 {
+// LoadGenesisHash is done once to compute and save the genesis block's hash
+func (g *Genesis) LoadGenesisHash() {
+	loadGenesisHash.Do(func() {
+		genesisHash = g.ComputeHash()
+	})
+}
+
+// Hash returns the genesis block's hash
+func Hash() hash.Hash256 {
+	return genesisHash
+}
+
+// ComputeHash computes the hash of genesis config
+func (g *Genesis) ComputeHash() hash.Hash256 {
 	gbProto := iotextypes.GenesisBlockchain{
 		Timestamp:             g.Timestamp,
 		BlockGasLimit:         g.BlockGasLimit,

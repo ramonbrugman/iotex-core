@@ -14,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/iotexproject/iotex-core/action"
+	"github.com/iotexproject/iotex-core/blockchain/genesis"
 	"github.com/iotexproject/iotex-core/crypto"
 )
 
@@ -45,8 +46,8 @@ func calculateTransferAmount(acts []action.SealedEnvelope) *big.Int {
 func VerifyBlock(blk *Block) error {
 	if blk.Height() == 0 {
 		// verify genesis block hash
-		if blk.HashBlock() != GenesisHash() {
-			return errors.New("genesis block hash does not match")
+		if blk.Timestamp().Unix() != genesis.Timestamp() {
+			return errors.New("genesis block timestamp does not match")
 		}
 		return nil
 	}

@@ -24,6 +24,7 @@ import (
 	"github.com/iotexproject/iotex-core/action/protocol"
 	"github.com/iotexproject/iotex-core/blockchain/block"
 	"github.com/iotexproject/iotex-core/blockchain/filedao"
+	"github.com/iotexproject/iotex-core/blockchain/genesis"
 	"github.com/iotexproject/iotex-core/config"
 	"github.com/iotexproject/iotex-core/pkg/lifecycle"
 	"github.com/iotexproject/iotex-core/pkg/log"
@@ -113,7 +114,7 @@ func (dao *blockDAO) fillWithBlockInfoAsTip(ctx context.Context, height uint64) 
 	if height == 0 {
 		bcCtx.Tip = protocol.TipInfo{
 			Height:    0,
-			Hash:      bcCtx.Genesis.Hash(),
+			Hash:      genesis.Hash(),
 			Timestamp: time.Unix(bcCtx.Genesis.Timestamp, 0),
 		}
 	} else {

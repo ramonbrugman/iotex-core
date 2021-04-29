@@ -21,6 +21,7 @@ import (
 
 	"github.com/iotexproject/iotex-core/action"
 	"github.com/iotexproject/iotex-core/blockchain/block"
+	"github.com/iotexproject/iotex-core/blockchain/genesis"
 	"github.com/iotexproject/iotex-core/config"
 	"github.com/iotexproject/iotex-core/db"
 	"github.com/iotexproject/iotex-core/db/batch"
@@ -127,7 +128,7 @@ func (fd *fileDAOLegacy) Height() (uint64, error) {
 
 func (fd *fileDAOLegacy) GetBlockHash(height uint64) (hash.Hash256, error) {
 	if height == 0 {
-		return block.GenesisHash(), nil
+		return genesis.Hash(), nil
 	}
 	h := hash.ZeroHash256
 	value, err := fd.kvStore.Get(blockHashHeightMappingNS, heightKey(height))
@@ -142,7 +143,7 @@ func (fd *fileDAOLegacy) GetBlockHash(height uint64) (hash.Hash256, error) {
 }
 
 func (fd *fileDAOLegacy) GetBlockHeight(h hash.Hash256) (uint64, error) {
-	if h == block.GenesisHash() {
+	if h == genesis.Hash() {
 		return 0, nil
 	}
 	value, err := getValueMustBe8Bytes(fd.kvStore, blockHashHeightMappingNS, hashKey(h))
@@ -153,7 +154,7 @@ func (fd *fileDAOLegacy) GetBlockHeight(h hash.Hash256) (uint64, error) {
 }
 
 func (fd *fileDAOLegacy) GetBlock(h hash.Hash256) (*block.Block, error) {
-	if h == block.GenesisHash() {
+	if h == genesis.Hash() {
 		return block.GenesisBlock(), nil
 	}
 	header, err := fd.Header(h)

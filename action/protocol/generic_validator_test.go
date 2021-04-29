@@ -20,6 +20,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/iotexproject/iotex-core/action"
+	"github.com/iotexproject/iotex-core/blockchain/genesis"
 	"github.com/iotexproject/iotex-core/config"
 	"github.com/iotexproject/iotex-core/state"
 	"github.com/iotexproject/iotex-core/test/identityset"
@@ -45,13 +46,14 @@ func TestActionProtoAndGenericValidator(t *testing.T) {
 			Caller: caller,
 		})
 
+	config.Default.Genesis.LoadGenesisHash()
 	ctx = WithBlockchainCtx(
 		ctx,
 		BlockchainCtx{
 			Genesis: config.Default.Genesis,
 			Tip: TipInfo{
 				Height:    0,
-				Hash:      config.Default.Genesis.Hash(),
+				Hash:      genesis.Hash(),
 				Timestamp: time.Unix(config.Default.Genesis.Timestamp, 0),
 			},
 		},

@@ -26,6 +26,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 
+	"github.com/iotexproject/iotex-core/blockchain/genesis"
 	"github.com/iotexproject/iotex-core/config"
 	"github.com/iotexproject/iotex-core/pkg/log"
 	"github.com/iotexproject/iotex-core/pkg/routine"
@@ -90,7 +91,7 @@ type Agent struct {
 
 // NewAgent instantiates a local P2P agent instance
 func NewAgent(cfg config.Config, broadcastHandler HandleBroadcastInbound, unicastHandler HandleUnicastInboundAsync) *Agent {
-	gh := cfg.Genesis.Hash()
+	gh := genesis.Hash()
 	log.L().Info("p2p agent", log.Hex("topicSuffix", gh[22:]))
 	return &Agent{
 		cfg: cfg.Network,

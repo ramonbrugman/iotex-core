@@ -140,7 +140,7 @@ func TestNewFdInterface(t *testing.T) {
 		// verify API for genesis block
 		h, err = fd.GetBlockHash(0)
 		r.NoError(err)
-		r.Equal(block.GenesisHash(), h)
+		r.Equal(genesis.Hash(), h)
 		height, err = fd.GetBlockHeight(h)
 		r.NoError(err)
 		r.Zero(height)
@@ -238,7 +238,7 @@ func TestNewFdInterface(t *testing.T) {
 		h, err = fd.GetBlockHash(height)
 		if height == 0 {
 			r.NoError(err)
-			r.Equal(block.GenesisHash(), h)
+			r.Equal(genesis.Hash(), h)
 		} else {
 			r.Equal(db.ErrNotExist, err)
 			r.Equal(hash.ZeroHash256, h)
@@ -258,8 +258,8 @@ func TestNewFdInterface(t *testing.T) {
 	cfg.DbPath = testPath
 	_, err = newFileDAOv2(0, cfg)
 	r.Equal(ErrNotSupported, err)
-	genesis.SetGenesisTimestamp(config.Default.Genesis.Timestamp)
-	block.LoadGenesisHash()
+	genesis.Default.SetGenesisTimestamp()
+	genesis.Default.LoadGenesisHash()
 
 	for _, compress := range []string{"", compress.Snappy} {
 		for _, start := range []uint64{1, 5, blockStoreBatchSize + 1, 4 * blockStoreBatchSize} {

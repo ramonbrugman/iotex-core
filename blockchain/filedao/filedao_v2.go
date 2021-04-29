@@ -19,6 +19,7 @@ import (
 
 	"github.com/iotexproject/iotex-core/action"
 	"github.com/iotexproject/iotex-core/blockchain/block"
+	"github.com/iotexproject/iotex-core/blockchain/genesis"
 	"github.com/iotexproject/iotex-core/config"
 	"github.com/iotexproject/iotex-core/db"
 	"github.com/iotexproject/iotex-core/db/batch"
@@ -149,7 +150,7 @@ func (fd *fileDAOv2) ContainsHeight(height uint64) bool {
 
 func (fd *fileDAOv2) GetBlockHash(height uint64) (hash.Hash256, error) {
 	if height == 0 {
-		return block.GenesisHash(), nil
+		return genesis.Hash(), nil
 	}
 	if !fd.ContainsHeight(height) {
 		return hash.ZeroHash256, db.ErrNotExist
@@ -162,7 +163,7 @@ func (fd *fileDAOv2) GetBlockHash(height uint64) (hash.Hash256, error) {
 }
 
 func (fd *fileDAOv2) GetBlockHeight(h hash.Hash256) (uint64, error) {
-	if h == block.GenesisHash() {
+	if h == genesis.Hash() {
 		return 0, nil
 	}
 	value, err := getValueMustBe8Bytes(fd.kvStore, blockHashHeightMappingNS, hashKey(h))

@@ -18,6 +18,7 @@ import (
 	"github.com/iotexproject/iotex-proto/golang/iotextypes"
 	"go.uber.org/zap"
 
+	"github.com/iotexproject/iotex-core/blockchain/genesis"
 	"github.com/iotexproject/iotex-core/pkg/log"
 	"github.com/iotexproject/iotex-core/pkg/util/byteutil"
 )
@@ -62,7 +63,12 @@ func (h *Header) PublicKey() crypto.PublicKey { return h.pubkey }
 func (h *Header) ReceiptRoot() hash.Hash256 { return h.receiptRoot }
 
 // HashBlock return the hash of this block (actually hash of block header)
-func (h *Header) HashBlock() hash.Hash256 { return h.HashHeader() }
+func (h *Header) HashBlock() hash.Hash256 {
+	if h.height == 0 {
+		return genesis.Hash()
+	}
+	return h.HashHeader()
+}
 
 // LogsBloomfilter return the bloom filter for all contract log events
 func (h *Header) LogsBloomfilter() bloom.BloomFilter { return h.logsBloom }

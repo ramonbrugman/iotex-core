@@ -1367,7 +1367,8 @@ func benchRunAction(sf Factory, b *testing.B) {
 	}
 	nonces := make([]uint64, len(accounts))
 	ge := genesis.Default
-	prevHash := ge.Hash()
+	ge.LoadGenesisHash()
+	prevHash := genesis.Hash()
 	for _, acc := range accounts {
 		ge.InitBalanceMap[acc] = big.NewInt(int64(b.N * 100)).String()
 	}
@@ -1500,7 +1501,8 @@ func benchState(sf Factory, b *testing.B) {
 	}
 	nonces := make([]uint64, len(accounts))
 	ge := genesis.Default
-	prevHash := ge.Hash()
+	ge.LoadGenesisHash()
+	prevHash := genesis.Hash()
 	for _, acc := range accounts {
 		ge.InitBalanceMap[acc] = big.NewInt(int64(1000)).String()
 	}
