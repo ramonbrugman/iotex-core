@@ -8,6 +8,7 @@ package dispatcher
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -107,6 +108,8 @@ type IotxDispatcher struct {
 	quit           chan struct{}
 	subscribers    map[uint32]Subscriber
 	subscribersMU  sync.RWMutex
+	eventRecv      map[iotexrpc.MessageType]int
+	eventRecvLock  sync.RWMutex
 }
 
 // NewDispatcher creates a new Dispatcher
@@ -117,6 +120,7 @@ func NewDispatcher(cfg config.Config) (Dispatcher, error) {
 		eventAudit:  make(map[iotexrpc.MessageType]int),
 		quit:        make(chan struct{}),
 		subscribers: make(map[uint32]Subscriber),
+		eventRecv:   make(map[iotexrpc.MessageType]int),
 	}
 	return d, nil
 }
@@ -174,6 +178,17 @@ func (d *IotxDispatcher) EventAudit() map[iotexrpc.MessageType]int {
 	return snapshot
 }
 
+// EventRecv returns the event received map
+func (d *IotxDispatcher) EventRecv() map[iotexrpc.MessageType]int {
+	d.eventRecvLock.RLock()
+	defer d.eventRecvLock.RUnlock()
+	snapshot := make(map[iotexrpc.MessageType]int)
+	for k, v := range d.eventRecv {
+		snapshot[k] = v
+	}
+	return snapshot
+}
+
 // newsHandler is the main handler for handling all news from peers.
 func (d *IotxDispatcher) newsHandler() {
 loop:
@@ -215,7 +230,7 @@ loop:
 
 // handleActionMsg handles actionMsg from all peers.
 func (d *IotxDispatcher) handleActionMsg(m *actionMsg) {
-	log.L().Debug("receive actionMsg.")
+	log.L().Info("drain action from event queue")
 
 	d.subscribersMU.RLock()
 	subscriber, ok := d.subscribers[m.ChainID()]
@@ -224,8 +239,9 @@ func (d *IotxDispatcher) handleActionMsg(m *actionMsg) {
 		d.updateEventAudit(iotexrpc.MessageType_ACTION)
 		if err := subscriber.HandleAction(m.ctx, m.action); err != nil {
 			requestMtc.WithLabelValues("AddAction", "false").Inc()
-			log.L().Debug("Handle action request error.", zap.Error(err))
+			log.L().Error("failed to handle action request.", zap.Error(err))
 		}
+		log.L().Info("finish HandleAction()")
 	} else {
 		log.L().Info("No subscriber specified in the dispatcher.", zap.Uint32("chainID", m.ChainID()))
 	}
@@ -233,7 +249,7 @@ func (d *IotxDispatcher) handleActionMsg(m *actionMsg) {
 
 // handleBlockMsg handles blockMsg from peers.
 func (d *IotxDispatcher) handleBlockMsg(m *blockMsg) {
-	log.L().Debug("receive blockMsg.", zap.Uint64("height", m.block.GetHeader().GetCore().GetHeight()))
+	log.L().Info("drain block from event queue.", zap.Uint64("height", m.block.GetHeader().GetCore().GetHeight()))
 
 	d.subscribersMU.RLock()
 	subscriber, ok := d.subscribers[m.ChainID()]
@@ -243,6 +259,7 @@ func (d *IotxDispatcher) handleBlockMsg(m *blockMsg) {
 		if err := subscriber.HandleBlock(m.ctx, m.block); err != nil {
 			log.L().Error("Fail to handle the block.", zap.Error(err))
 		}
+		log.L().Info("finish HandleBlock()")
 	} else {
 		log.L().Info("No subscriber specified in the dispatcher.", zap.Uint32("chainID", m.ChainID()))
 	}
@@ -274,6 +291,7 @@ func (d *IotxDispatcher) dispatchAction(ctx context.Context, chainID uint32, msg
 	if atomic.LoadInt32(&d.shutdown) != 0 {
 		return
 	}
+	d.updateEventRecv(iotexrpc.MessageType_ACTION)
 	d.enqueueEvent(&actionMsg{
 		ctx:     ctx,
 		chainID: chainID,
@@ -286,6 +304,7 @@ func (d *IotxDispatcher) dispatchBlockCommit(ctx context.Context, chainID uint32
 	if atomic.LoadInt32(&d.shutdown) != 0 {
 		return
 	}
+	d.updateEventRecv(iotexrpc.MessageType_BLOCK)
 	d.enqueueEvent(&blockMsg{
 		ctx:     ctx,
 		chainID: chainID,
@@ -357,7 +376,14 @@ func (d *IotxDispatcher) HandleTell(ctx context.Context, chainID uint32, peer pe
 
 func (d *IotxDispatcher) enqueueEvent(event interface{}) {
 	if len(d.eventChan) == cap(d.eventChan) {
-		log.L().Warn("dispatcher event chan is full, drop an event.")
+		switch event.(type) {
+		case *actionMsg:
+			log.L().Info("received action")
+		case *blockMsg:
+			log.L().Info("received block")
+		}
+		dpEvts, _ := json.Marshal(d.EventRecv())
+		log.L().Warn("dispatcher event chan is full, drop an event.", zap.String("received", string(dpEvts)))
 		return
 	}
 	d.eventChan <- event
@@ -367,4 +393,10 @@ func (d *IotxDispatcher) updateEventAudit(t iotexrpc.MessageType) {
 	d.eventAuditLock.Lock()
 	defer d.eventAuditLock.Unlock()
 	d.eventAudit[t]++
+}
+
+func (d *IotxDispatcher) updateEventRecv(t iotexrpc.MessageType) {
+	d.eventRecvLock.Lock()
+	defer d.eventRecvLock.Unlock()
+	d.eventRecv[t]++
 }
