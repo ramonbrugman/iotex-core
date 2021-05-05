@@ -258,7 +258,7 @@ func (d *IotxDispatcher) handleActionMsg(m *actionMsg) {
 
 // handleBlockMsg handles blockMsg from peers.
 func (d *IotxDispatcher) handleBlockMsg(m *blockMsg) {
-	log.L().Debug("receive blockMsg.", zap.Uint64("height", m.block.GetHeader().GetCore().GetHeight()))
+	log.L().Info("process blockMsg.", zap.Uint64("height", m.block.GetHeader().GetCore().GetHeight()))
 
 	if subscriber := d.subscriber(m.ChainID()); subscriber != nil {
 		d.updateEventAudit(iotexrpc.MessageType_BLOCK)
@@ -269,6 +269,7 @@ func (d *IotxDispatcher) handleBlockMsg(m *blockMsg) {
 		defer d.blockChanLock.RUnlock()
 
 		subscriber.ReportFullness(m.ctx, iotexrpc.MessageType_BLOCK, float32(len(d.blockChan))/float32(cap(d.blockChan)))
+		log.L().Info("done block")
 	} else {
 		log.L().Info("No subscriber specified in the dispatcher.", zap.Uint32("chainID", m.ChainID()))
 	}
@@ -276,7 +277,7 @@ func (d *IotxDispatcher) handleBlockMsg(m *blockMsg) {
 
 // handleBlockSyncMsg handles block messages from peers.
 func (d *IotxDispatcher) handleBlockSyncMsg(m *blockSyncMsg) {
-	log.L().Debug("Receive blockSyncMsg.",
+	log.L().Info("process blockSyncMsg.",
 		zap.String("src", fmt.Sprintf("%v", m.peer)),
 		zap.Uint64("start", m.sync.Start),
 		zap.Uint64("end", m.sync.End))
@@ -291,6 +292,7 @@ func (d *IotxDispatcher) handleBlockSyncMsg(m *blockSyncMsg) {
 		defer d.syncChanLock.RUnlock()
 
 		subscriber.ReportFullness(m.ctx, iotexrpc.MessageType_BLOCK_REQUEST, float32(len(d.syncChan))/float32(cap(d.syncChan)))
+		log.L().Info("done blockSync")
 	} else {
 		log.L().Info("No subscriber specified in the dispatcher.", zap.Uint32("chainID", m.ChainID()))
 	}

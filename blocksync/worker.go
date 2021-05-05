@@ -50,7 +50,7 @@ func newSyncWorker(
 		unicastHandler:   unicastHandler,
 		neighborsHandler: neighborsHandler,
 		buf:              buf,
-		targetHeight:     0,
+		targetHeight:     8640720,
 		maxRepeat:        cfg.BlockSync.MaxRepeat,
 		repeatDecayStep:  cfg.BlockSync.RepeatDecayStep,
 	}
