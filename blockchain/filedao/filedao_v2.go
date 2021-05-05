@@ -8,6 +8,7 @@ package filedao
 
 import (
 	"context"
+	"github.com/iotexproject/iotex-core/pkg/log"
 	"sync/atomic"
 	"unsafe"
 
@@ -185,10 +186,13 @@ func (fd *fileDAOv2) GetBlockByHeight(height uint64) (*block.Block, error) {
 	if height == 0 {
 		return block.GenesisBlock(), nil
 	}
+	log.L().Info("enter v2.GetBlockByHeight")
 	blkInfo, err := fd.getBlockStore(height)
 	if err != nil {
+		log.L().Info("errout v2.GetBlockByHeight")
 		return nil, errors.Wrapf(err, "failed to get block at height %d", height)
 	}
+	log.L().Info("exit v2.GetBlockByHeight")
 	return blkInfo.Block, nil
 }
 

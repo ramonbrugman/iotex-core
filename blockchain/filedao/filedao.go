@@ -228,12 +228,15 @@ func (fd *fileDAO) Header(hash hash.Hash256) (*block.Header, error) {
 }
 
 func (fd *fileDAO) HeaderByHeight(height uint64) (*block.Header, error) {
+	log.L().Info("enter filedao.HeaderByHeight")
 	if fd.v2Fd != nil {
 		if v2 := fd.v2Fd.FileDAOByHeight(height); v2 != nil {
 			blk, err := v2.GetBlockByHeight(height)
 			if err != nil {
+				log.L().Info("exit filedao.HeaderByHeight with err")
 				return nil, err
 			}
+			log.L().Info("errout filedao.HeaderByHeight")
 			return &blk.Header, nil
 		}
 	}

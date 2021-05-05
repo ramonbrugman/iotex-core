@@ -2,6 +2,7 @@ package filedao
 
 import (
 	"context"
+	"github.com/iotexproject/iotex-core/pkg/log"
 	"sort"
 
 	"github.com/iotexproject/go-pkgs/hash"
@@ -82,6 +83,7 @@ func (fm *FileV2Manager) FileDAOByHeight(height uint64) BaseFileDAO {
 		return fm.Indices[right].fd
 	}
 
+	log.L().Info("enter search")
 	left := 0
 	for left <= right {
 		mid := (left + right) / 2
@@ -95,6 +97,7 @@ func (fm *FileV2Manager) FileDAOByHeight(height uint64) BaseFileDAO {
 			left = mid + 1
 		}
 	}
+	log.L().Info("exit search")
 	return nil
 }
 
