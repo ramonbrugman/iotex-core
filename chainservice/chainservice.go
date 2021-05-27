@@ -493,6 +493,8 @@ func (cs *ChainService) Start(ctx context.Context) error {
 	}
 	if err := cs.chain.Start(ctx); err != nil {
 		return errors.Wrap(err, "error when starting blockchain")
+	} else {
+		return errors.Wrap(blockchain.ErrInvalidTipHeight, "error when starting blockchain")
 	}
 	if err := cs.consensus.Start(ctx); err != nil {
 		return errors.Wrap(err, "error when starting consensus")

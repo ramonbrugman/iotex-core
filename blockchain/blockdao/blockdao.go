@@ -165,7 +165,7 @@ func (dao *blockDAO) checkIndexers(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-			if err := indexer.PutBlock(protocol.WithBlockCtx(
+			blkCtx := protocol.WithBlockCtx(
 				ctx,
 				protocol.BlockCtx{
 					BlockHeight:    i,
@@ -173,7 +173,13 @@ func (dao *blockDAO) checkIndexers(ctx context.Context) error {
 					Producer:       producer,
 					GasLimit:       g.BlockGasLimit,
 				},
-			), blk); err != nil {
+			)
+			for i := 0; i < 10; i++ {
+				if err = indexer.PutBlock(blkCtx, blk); err == nil {
+					break
+				}
+			}
+			if err != nil {
 				return err
 			}
 			if i%5000 == 0 {
