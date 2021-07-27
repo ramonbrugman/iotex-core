@@ -462,8 +462,12 @@ func (p *Agent) connect(ctx context.Context) error {
 }
 
 func (p *Agent) reconnect() {
-	if p.qosMetrics.lostConnection() {
-		log.L().Info("Network lost, try re-connecting.")
+	peers, err := p.Neighbors(context.Background())
+	if err == ErrAgentNotStarted {
+		return
+	}
+	if len(peers) == 0 || p.qosMetrics.lostConnection() {
+		log.L().Info("network lost, try re-connecting.")
 		p.host.ClearBlocklist()
 		p.connect(context.Background())
 	}
